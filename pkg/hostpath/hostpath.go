@@ -17,10 +17,12 @@ limitations under the License.
 package hostpath
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	v1 "k8s.io/api/core/v1"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,6 +35,9 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	fs "k8s.io/kubernetes/pkg/volume/util/fs"
 	"k8s.io/kubernetes/pkg/volume/util/volumepathhandler"
 	utilexec "k8s.io/utils/exec"
@@ -143,6 +148,23 @@ func NewHostPathDriver(driverName, nodeID, endpoint string, ephemeral bool, maxV
 	if err := hp.discoveryExistingVolumes(); err != nil {
 		return nil, err
 	}
+
+	glog.Infoln("from pod path:")
+	for k, v := range hp.volumes {
+		glog.Infof("id: %s, volume: %+v\n", k, v)
+	}
+
+	if len(hp.volumes) == 0 {
+		if err := hp.discoveryExistingVolumesByPVs(); err != nil {
+			return nil, err
+		}
+
+		glog.Infoln("volumes from pvs:")
+		for k, v := range hp.volumes {
+			glog.Infof("id: %s, volume: %+v\n", k, v)
+		}
+	}
+
 	hp.discoverExistingSnapshots()
 	return hp, nil
 }
@@ -174,6 +196,54 @@ func (h *hostPath) discoverExistingSnapshots() {
 			}
 		}
 	}
+}
+
+func (hp *hostPath) discoveryExistingVolumesByPVs() error {
+	// creates the in-cluster config
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return err
+	}
+	// creates the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return err
+	}
+
+	pvs, err := clientset.CoreV1().PersistentVolumes().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, pv := range pvs.Items {
+		if pv.Spec.CSI != nil && pv.Spec.CSI.Driver == hp.name && len(pv.Spec.CSI.VolumeHandle) > 0 {
+			cap := pv.Spec.Capacity.Storage()
+			volSize, ok := cap.AsInt64()
+			volAccessType := mountAccess
+			if *pv.Spec.VolumeMode == v1.PersistentVolumeBlock {
+				volAccessType = blockAccess
+			}
+			if ok {
+				hpv := &hostPathVolume{
+					VolName:       pv.Name,
+					VolID:         pv.Spec.CSI.VolumeHandle,
+					VolSize:       volSize,
+					VolPath:       getVolumePath(pv.Spec.CSI.VolumeHandle),
+					VolAccessType: volAccessType,
+				}
+
+				if hpv.Kind != "" && hp.capacity.Enabled() {
+					if _, err := hp.capacity.Alloc(hpv.Kind, hpv.VolSize); err != nil {
+						return fmt.Errorf("existing volume(s) do not match new capacity configuration: %v", err)
+					}
+				}
+				hp.volumes[hpv.VolID] = *hpv
+			}
+
+		}
+	}
+
+	return nil
 }
 
 func (hp *hostPath) discoveryExistingVolumes() error {
