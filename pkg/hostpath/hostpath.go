@@ -71,6 +71,8 @@ type hostPath struct {
 	volumes   map[string]hostPathVolume
 	snapshots map[string]hostPathSnapshot
 	capacity  Capacity
+
+	k8sClient kubernetes.Interface
 }
 
 type hostPathVolume struct {
@@ -133,6 +135,17 @@ func NewHostPathDriver(driverName, nodeID, endpoint string, ephemeral bool, maxV
 	glog.Infof("Driver: %v ", driverName)
 	glog.Infof("Version: %s", vendorVersion)
 
+	// creates the in-cluster config
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	// creates the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
 	hp := &hostPath{
 		name:              driverName,
 		version:           vendorVersion,
@@ -141,30 +154,14 @@ func NewHostPathDriver(driverName, nodeID, endpoint string, ephemeral bool, maxV
 		ephemeral:         ephemeral,
 		maxVolumesPerNode: maxVolumesPerNode,
 		capacity:          capacity,
+		k8sClient:         clientset,
 
 		volumes:   map[string]hostPathVolume{},
 		snapshots: map[string]hostPathSnapshot{},
 	}
-	if err := hp.discoveryExistingVolumes(); err != nil {
+	if err := hp.discoveryExistingVolumesByPVs(); err != nil {
 		return nil, err
 	}
-
-	glog.Infoln("from pod path:")
-	for k, v := range hp.volumes {
-		glog.Infof("id: %s, volume: %+v\n", k, v)
-	}
-
-	if len(hp.volumes) == 0 {
-		if err := hp.discoveryExistingVolumesByPVs(); err != nil {
-			return nil, err
-		}
-
-		glog.Infoln("volumes from pvs:")
-		for k, v := range hp.volumes {
-			glog.Infof("id: %s, volume: %+v\n", k, v)
-		}
-	}
-
 	hp.discoverExistingSnapshots()
 	return hp, nil
 }
@@ -199,18 +196,7 @@ func (h *hostPath) discoverExistingSnapshots() {
 }
 
 func (hp *hostPath) discoveryExistingVolumesByPVs() error {
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return err
-	}
-	// creates the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return err
-	}
-
-	pvs, err := clientset.CoreV1().PersistentVolumes().List(context.Background(), metav1.ListOptions{})
+	pvs, err := hp.k8sClient.CoreV1().PersistentVolumes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -219,11 +205,12 @@ func (hp *hostPath) discoveryExistingVolumesByPVs() error {
 		if pv.Spec.CSI != nil && pv.Spec.CSI.Driver == hp.name && len(pv.Spec.CSI.VolumeHandle) > 0 {
 			cap := pv.Spec.Capacity.Storage()
 			volSize, ok := cap.AsInt64()
-			volAccessType := mountAccess
-			if *pv.Spec.VolumeMode == v1.PersistentVolumeBlock {
-				volAccessType = blockAccess
-			}
 			if ok {
+				volAccessType := mountAccess
+				if *pv.Spec.VolumeMode == v1.PersistentVolumeBlock {
+					volAccessType = blockAccess
+				}
+
 				hpv := &hostPathVolume{
 					VolName:       pv.Name,
 					VolID:         pv.Spec.CSI.VolumeHandle,
@@ -237,9 +224,10 @@ func (hp *hostPath) discoveryExistingVolumesByPVs() error {
 						return fmt.Errorf("existing volume(s) do not match new capacity configuration: %v", err)
 					}
 				}
+
+				glog.V(4).Infof("Existing Volumes: %+v", hpv)
 				hp.volumes[hpv.VolID] = *hpv
 			}
-
 		}
 	}
 
