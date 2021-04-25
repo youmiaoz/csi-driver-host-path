@@ -18,6 +18,7 @@ LABEL description="HostPath Driver"
 ARG binary=./bin/hostpathplugin
 
 # Add util-linux to get a new version of losetup.
-RUN apk add util-linux && apk update && apk upgrade
+RUN apk update && apk upgrade && apk add util-linux coreutils
 COPY ${binary} /hostpathplugin
+RUN chmod +x /hostpathplugin
 ENTRYPOINT ["/hostpathplugin"]
