@@ -476,7 +476,7 @@ func (hp *hostPath) loadFromSnapshot(size int64, snapshotId, destPath string, mo
 	var cmd []string
 	switch mode {
 	case mountAccess:
-		cmd = []string{"tar", "zxvf", snapshotPath, "-C", destPath}
+		cmd = []string{"tar", "Szxvf", snapshotPath, "-C", destPath}
 	case blockAccess:
 		cmd = []string{"dd", "if=" + snapshotPath, "of=" + destPath}
 	default:

@@ -428,7 +428,7 @@ func (hp *hostPath) CreateSnapshot(ctx context.Context, req *csi.CreateSnapshotR
 		cmd = []string{"cp", volPath, file}
 	} else {
 		glog.V(4).Infof("Creating snapshot of Filsystem Mode Volume")
-		cmd = []string{"tar", "czf", file, "-C", volPath, "."}
+		cmd = []string{"tar", "Sczf", file, "-C", volPath, "."}
 	}
 	executor := utilexec.New()
 	out, err := executor.Command(cmd[0], cmd[1:]...).CombinedOutput()
