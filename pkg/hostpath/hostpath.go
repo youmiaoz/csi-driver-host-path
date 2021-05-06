@@ -474,9 +474,11 @@ func (hp *hostPath) loadFromSnapshot(size int64, snapshotId, destPath string, mo
 	snapshotPath := snapshot.Path
 
 	var cmd []string
+	isTarCmd := false
 	switch mode {
 	case mountAccess:
-		cmd = []string{"tar", "Szxvf", snapshotPath, "-C", destPath}
+		cmd = []string{"tar", "Szxf", snapshotPath, "-C", destPath}
+		isTarCmd = true
 	case blockAccess:
 		cmd = []string{"dd", "if=" + snapshotPath, "of=" + destPath}
 	default:
@@ -487,9 +489,14 @@ func (hp *hostPath) loadFromSnapshot(size int64, snapshotId, destPath string, mo
 	glog.V(4).Infof("Command Start: %v", cmd)
 	out, err := executor.Command(cmd[0], cmd[1:]...).CombinedOutput()
 	glog.V(4).Infof("Command Finish: %v", string(out))
+
+	if isTarCmd && isTarSuccessful(err) {
+		err = nil
+	}
 	if err != nil {
 		return fmt.Errorf("failed pre-populate data from snapshot %v: %w: %s", snapshotId, err, out)
 	}
+
 	return nil
 }
 

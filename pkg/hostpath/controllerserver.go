@@ -423,15 +423,21 @@ func (hp *hostPath) CreateSnapshot(ctx context.Context, req *csi.CreateSnapshotR
 	file := getSnapshotPath(snapshotID)
 
 	var cmd []string
+	isTarCmd := false
 	if hostPathVolume.VolAccessType == blockAccess {
 		glog.V(4).Infof("Creating snapshot of Raw Block Mode Volume")
 		cmd = []string{"cp", volPath, file}
 	} else {
 		glog.V(4).Infof("Creating snapshot of Filsystem Mode Volume")
 		cmd = []string{"tar", "Sczf", file, "-C", volPath, "."}
+		isTarCmd = true
 	}
 	executor := utilexec.New()
 	out, err := executor.Command(cmd[0], cmd[1:]...).CombinedOutput()
+
+	if isTarCmd && isTarSuccessful(err) {
+		err = nil
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed create snapshot: %w: %s", err, out)
 	}
