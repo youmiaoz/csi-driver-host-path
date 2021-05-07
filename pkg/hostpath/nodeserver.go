@@ -202,7 +202,8 @@ func (hp *hostPath) NodeUnpublishVolume(ctx context.Context, req *csi.NodeUnpubl
 
 	vol, err := hp.getVolumeByID(volumeID)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		// Return OK if volume not found
+		return &csi.NodeUnpublishVolumeResponse{}, nil
 	}
 
 	// Unmount only if the target path is really a mount point.
@@ -300,7 +301,7 @@ func (hp *hostPath) NodeGetCapabilities(ctx context.Context, req *csi.NodeGetCap
 						Type: csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
 					},
 				},
-			},			{
+			}, {
 				Type: &csi.NodeServiceCapability_Rpc{
 					Rpc: &csi.NodeServiceCapability_RPC{
 						Type: csi.NodeServiceCapability_RPC_VOLUME_CONDITION,
@@ -337,7 +338,7 @@ func (hp *hostPath) NodeGetVolumeStats(ctx context.Context, in *csi.NodeGetVolum
 				Used:      used,
 				Total:     capacity,
 				Unit:      csi.VolumeUsage_BYTES,
-			},			{
+			}, {
 				Available: inodesFree,
 				Used:      inodesUsed,
 				Total:     inodes,
