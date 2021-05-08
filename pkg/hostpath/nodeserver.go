@@ -202,8 +202,8 @@ func (hp *hostPath) NodeUnpublishVolume(ctx context.Context, req *csi.NodeUnpubl
 
 	vol, err := hp.getVolumeByID(volumeID)
 	if err != nil {
-		// Return OK if volume not found
-		return &csi.NodeUnpublishVolumeResponse{}, nil
+		// Log the error and proceed when volume not found
+		glog.Error("volume not found", err)
 	}
 
 	// Unmount only if the target path is really a mount point.
