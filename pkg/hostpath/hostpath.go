@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	v1 "k8s.io/api/core/v1"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,6 +29,8 @@ import (
 	"sort"
 	"strings"
 	"sync"
+
+	v1 "k8s.io/api/core/v1"
 
 	"github.com/golang/glog"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
@@ -476,7 +477,8 @@ func (hp *hostPath) loadFromSnapshot(size int64, snapshotId, destPath string, mo
 	var cmd []string
 	switch mode {
 	case mountAccess:
-		cmd = []string{"tar", "zxvf", snapshotPath, "-C", destPath}
+		// destPath has already been created at this time
+		cmd = []string{"cp", "-aT", snapshotPath, destPath}
 	case blockAccess:
 		cmd = []string{"dd", "if=" + snapshotPath, "of=" + destPath}
 	default:
