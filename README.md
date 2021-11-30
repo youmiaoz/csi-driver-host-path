@@ -1,3 +1,5 @@
+# NOTICE
+This repo is forked from https://github.com/kubernetes-csi/csi-driver-host-path and aims for production use.
 # CSI Hostpath Driver
 
 This repository hosts the CSI Hostpath driver and all of its build and dependent configuration files to deploy the driver.
@@ -21,6 +23,12 @@ The driver can provide empty directories that are backed by the same filesystem 
 Usually, the driver implements all CSI operations itself. When deployed with the `-proxy-endpoint` parameter, it instead proxies all incoming connections for a CSI driver that is [embedded inside the Kubernetes E2E test suite](https://github.com/kubernetes/kubernetes/tree/master/test/e2e/storage/drivers/csi-test) and used for mocking a CSI driver [with callbacks provided by certain tests](https://github.com/kubernetes/kubernetes/blob/5ad79eae2dcbf33df3b35c48ec993d30fbda46dd/test/e2e/storage/csi_mock_volume.go#L110).
 
 ## Deployment
+### By Helm
+```shell
+helm install csi-hostpath ./deploy/chart -n kube-system
+```
+
+### By installation script
 Deployment varies depending on the Kubernetes version your cluster is running:
 - [Deployment for Kubernetes 1.17 and later](docs/deploy-1.17-and-later.md)
 - [Deployment for Kubernetes 1.16 and earlier](docs/deploy-pre-1.17.md)
