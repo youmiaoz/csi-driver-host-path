@@ -20,7 +20,7 @@ metadata:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: external-attacher-runner
+  name: {{ .Values.attacher.clusterRoleName }}
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
@@ -46,7 +46,7 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-attacher-role
+  name: {{ .Values.attacher.clusterRoleBindingName }}
 subjects:
   - kind: ServiceAccount
     name: csi-attacher
@@ -54,7 +54,7 @@ subjects:
     namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: external-attacher-runner
+  name: {{ .Values.attacher.clusterRoleName }}
   apiGroup: rbac.authorization.k8s.io
 
 ---
