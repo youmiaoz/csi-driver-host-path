@@ -95,7 +95,7 @@ spec:
           image: {{ .Values.plugins.hostPathPlugin.repository }}:{{ .Values.plugins.hostPathPlugin.tag }}
           imagePullPolicy: {{ .Values.plugins.hostPathPlugin.pullPolicy }}
           args:
-            - "--drivername=hostpath.csi.k8s.io"
+            - "--drivername="{{ .Values.driver.name }}
             - "--v=5"
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--nodeid=$(KUBE_NODE_NAME)"

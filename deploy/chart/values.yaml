@@ -1,5 +1,13 @@
 storageClass:
-  isDefaultStorageClass: true
+  name: csi-hostpath
+  isDefaultStorageClass: false
+
+snapshotClass:
+  name: csi-hostpath
+  isDefaultSnapshotClass: false
+
+driver:
+  name: hostpath.csi.k8s.io
 
 snapshot-controller:
   repository: csiplugin/snapshot-controller
