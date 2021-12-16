@@ -1,0 +1,85 @@
+storageClass:
+  name: csi-hostpath
+  isDefaultStorageClass: false
+
+snapshotClass:
+  name: csi-hostpath
+  isDefaultSnapshotClass: false
+
+driver:
+  name: hostpath.csi.k8s.io
+
+snapshot-controller:
+  enabled: true
+  repository: csiplugin/snapshot-controller
+  tag: v2.0.1
+  pullPolicy: IfNotPresent
+
+attacher:
+  clusterRoleName: external-attacher-runner
+  clusterRoleBindingName: csi-attacher-role
+  repository: k8s.gcr.io/sig-storage/csi-attacher
+  tag: v3.1.0
+  pullPolicy: IfNotPresent
+
+plugins:
+  healthMonitorAgent:
+    repository: k8s.gcr.io/sig-storage/csi-external-health-monitor-agent
+    tag: v0.2.0
+    pullPolicy: IfNotPresent
+  healthMonitorController:
+    clusterRoleName: external-health-monitor-controller-runner
+    clusterRoleBindingName: csi-health-monitor-controller-role
+    repository: k8s.gcr.io/sig-storage/csi-external-health-monitor-controller
+    tag: v0.2.0
+    pullPolicy: IfNotPresent
+  nodeDriverRegistrar:
+    repository: k8s.gcr.io/sig-storage/csi-node-driver-registrar
+    tag: v2.0.1
+    pullPolicy: IfNotPresent
+  hostPathPlugin:
+    repository: csistorage/hostpathplugin
+    tag: v1.6.2
+    pullPolicy: IfNotPresent
+    dataDir: /var/lib/csi-hostpath-data/
+  livenessProbe:
+    repository: k8s.gcr.io/sig-storage/livenessprobe
+    tag: v2.2.0
+    pullPolicy: IfNotPresent
+
+provisioner:
+  clusterRoleName: external-provisioner-runner
+  clusterRoleBindingName: csi-provisioner-role
+  repository: k8s.gcr.io/sig-storage/csi-provisioner
+  tag: v2.1.0
+  pullPolicy: IfNotPresent
+
+resizer:
+  clusterRoleName: external-resizer-runner
+  clusterRoleBindingName: csi-resizer-role
+  repository: k8s.gcr.io/sig-storage/csi-resizer
+  tag: v1.1.0
+  pullPolicy: IfNotPresent
+
+snapshotter:
+  clusterRoleName: external-snapshotter-runner
+  clusterRoleBindingName: csi-snapshotter-role
+  repository: k8s.gcr.io/sig-storage/csi-snapshotter
+  tag: v4.0.0
+  pullPolicy: IfNotPresent
+
+testing:
+  repository: alpine/socat
+  tag: 1.0.3
+  pullPolicy: IfNotPresent
+
+#affinity:
+#  podAffinity:
+#    requiredDuringSchedulingIgnoredDuringExecution:
+#      - labelSelector:
+#          matchExpressions:
+#            - key: app
+#              operator: In
+#              values:
+#                - csi-hostpathplugin
+#        topologyKey: kubernetes.io/hostname
