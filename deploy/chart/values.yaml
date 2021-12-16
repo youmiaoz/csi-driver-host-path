@@ -10,6 +10,7 @@ driver:
   name: hostpath.csi.k8s.io
 
 snapshot-controller:
+  enabled: true
   repository: csiplugin/snapshot-controller
   tag: v2.0.1
   pullPolicy: IfNotPresent
