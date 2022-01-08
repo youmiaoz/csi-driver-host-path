@@ -1,0 +1,14 @@
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    kubesphere.io/alias-name: local-storage
+    meta.helm.sh/release-name: csi-hostpath-b
+    meta.helm.sh/release-namespace: csi-hostpath-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: csi-hostpath-b
+provisioner: hostpath.csi.k8s.io-b
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
