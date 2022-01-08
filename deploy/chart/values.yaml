@@ -18,23 +18,23 @@ snapshot-controller:
 attacher:
   clusterRoleName: external-attacher-runner
   clusterRoleBindingName: csi-attacher-role
-  repository: k8s.gcr.io/sig-storage/csi-attacher
+  repository: registry.cn-shanghai.aliyuncs.com/jibu-ys1000-test/csi-attacher
   tag: v3.1.0
   pullPolicy: IfNotPresent
 
 plugins:
   healthMonitorAgent:
-    repository: k8s.gcr.io/sig-storage/csi-external-health-monitor-agent
+    repository: registry.cn-shanghai.aliyuncs.com/jibu-ys1000-test/csi-external-health-monitor-agent
     tag: v0.2.0
     pullPolicy: IfNotPresent
   healthMonitorController:
     clusterRoleName: external-health-monitor-controller-runner
     clusterRoleBindingName: csi-health-monitor-controller-role
-    repository: k8s.gcr.io/sig-storage/csi-external-health-monitor-controller
+    repository: registry.cn-shanghai.aliyuncs.com/jibu-ys1000-test/csi-external-health-monitor-controller
     tag: v0.2.0
     pullPolicy: IfNotPresent
   nodeDriverRegistrar:
-    repository: k8s.gcr.io/sig-storage/csi-node-driver-registrar
+    repository: registry.cn-shanghai.aliyuncs.com/jibu-ys1000-test/csi-node-driver-registrar
     tag: v2.0.1
     pullPolicy: IfNotPresent
   hostPathPlugin:
@@ -43,28 +43,28 @@ plugins:
     pullPolicy: IfNotPresent
     dataDir: /var/lib/csi-hostpath-data/
   livenessProbe:
-    repository: k8s.gcr.io/sig-storage/livenessprobe
+    repository: registry.cn-shanghai.aliyuncs.com/jibu-ys1000-test/livenessprobe
     tag: v2.2.0
     pullPolicy: IfNotPresent
 
 provisioner:
   clusterRoleName: external-provisioner-runner
   clusterRoleBindingName: csi-provisioner-role
-  repository: k8s.gcr.io/sig-storage/csi-provisioner
+  repository: registry.cn-shanghai.aliyuncs.com/jibu-ys1000-test/csi-provisioner
   tag: v2.1.0
   pullPolicy: IfNotPresent
 
 resizer:
   clusterRoleName: external-resizer-runner
   clusterRoleBindingName: csi-resizer-role
-  repository: k8s.gcr.io/sig-storage/csi-resizer
+  repository: registry.cn-shanghai.aliyuncs.com/jibu-ys1000-test/csi-resizer
   tag: v1.1.0
   pullPolicy: IfNotPresent
 
 snapshotter:
   clusterRoleName: external-snapshotter-runner
   clusterRoleBindingName: csi-snapshotter-role
-  repository: k8s.gcr.io/sig-storage/csi-snapshotter
+  repository: registry.cn-shanghai.aliyuncs.com/jibu-ys1000-test/csi-snapshotter
   tag: v4.0.0
   pullPolicy: IfNotPresent
 
