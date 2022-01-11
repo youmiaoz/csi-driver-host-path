@@ -6,7 +6,12 @@
 - install snapshot crd and controller
 
 ```
-git checkout origin/release-4.0
+# cd external-snapshotter
+# git checkout release-4.0
+# git branch
+  master
+* release-4.0
+
 kubectl apply -f client/config/crd
 kubectl apply -f deploy/kubernetes/snapshot-controller
 
@@ -19,11 +24,20 @@ NAME                              READY   STATUS      RESTARTS   AGE
 snapshot-controller-0             1/1     Running     0          7m1s
 ```
 
-2. git clone repo https://github.com/jerry-jibu/csi-driver-host-path and switch to `staging` branch
+2. git clone repo https://github.com/jerry-jibu/csi-driver-host-path and switch to `staging` branch.
+```
+# git clone https://github.com/jerry-jibu/csi-driver-host-path
+# git checkout staging
+# git branch
+  master
+* staging
+```
+
 locate to hack directory and execute it. 
 https://github.com/jerry-jibu/csi-driver-host-path/blob/staging/hack/new-csi-driver-chart-values-yaml.sh 
 
 ```
+# cd csi-driver-host-path/hack
 $ ./new-csi-driver-chart-values-yaml.sh
 usage: ./new-csi-driver-chart-values-yaml.sh <suffix>
 this script will generate chart values.yaml to deploy a new csi hostpath driver. The new driver will have its own data dir, storage class, snapshot class, driver name etc, so that you can deploy multiple hostpath csi drivers in one cluster.
